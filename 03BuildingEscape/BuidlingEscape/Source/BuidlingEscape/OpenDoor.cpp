@@ -1,4 +1,5 @@
 // Copyright Jader Vulcano
+// Bericht voor 11/1/17 :3
 
 #include "BuidlingEscape.h"
 #include "OpenDoor.h"
