@@ -1,5 +1,4 @@
 // Copyright Jader Vulcano
-// Bericht voor 11/1/17 :3
 
 #include "BuidlingEscape.h"
 #include "OpenDoor.h"
@@ -23,7 +22,7 @@ void UOpenDoor::BeginPlay()
 
 	auto* Owner = GetOwner();
 
-	FRotator NewRotation = FRotator(0.f, 90.f, 0.f);
+	FRotator NewRotation = FRotator(0.f, 60.f, 0.f);
 
 	Owner->SetActorRotation(NewRotation);
 	
