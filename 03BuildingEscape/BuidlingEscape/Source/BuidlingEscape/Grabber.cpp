@@ -21,29 +21,58 @@ UGrabber::UGrabber()
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	FindPhysicsHandleComponent();
+	SetupInputComponent();
 }
 
-
-// Called every frame
-void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
+void UGrabber::Grab()
 {
-	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
+	GetFirstPhysicsBodyInReach();
+}
 
+void UGrabber::Release()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Grab released"));
+}
+
+void UGrabber::FindPhysicsHandleComponent()
+{
+	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	if (PhysicsHandle)
+	{
+
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s missing physicshandle"), *GetOwner()->GetName());
+	}
+}
+
+void UGrabber::SetupInputComponent()
+{
+	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
+
+	if (InputComponent)
+	{
+		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s missing InputComponent"), *GetOwner()->GetName());
+	}
+}
+
+const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
+{
 	FVector Location;
 	FRotator Rotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT Location, OUT Rotation);
 
-	//UE_LOG(LogTemp, Warning, TEXT("pos is %s and rotation is %s"), *Location.ToString(), *Rotation.ToString());
-
-	FVector LineEnd = Location + Rotation.Vector() * 200;
-
-	DrawDebugLine(GetWorld(), Location, LineEnd, FColor(255, 0, 0), false, 0.f, 0.f, 1.f);
+	FVector LineEnd = Location + Rotation.Vector() * Reach;
 
 	FHitResult Hit;
-
 	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
-
 	GetWorld()->LineTraceSingleByObjectType(
 		OUT Hit,
 		Location,
@@ -53,9 +82,18 @@ void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompon
 	);
 
 	AActor * ActorHit = Hit.GetActor();
-
 	if (ActorHit)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Collided with %s"), *(ActorHit->GetName()));
 	}
+	return Hit;
+}
+
+
+// Called every frame
+void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
+{
+	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
+
+
 }
