@@ -21,17 +21,16 @@ void UOpenDoor::BeginPlay()
 	Super::BeginPlay();
 
 	ActorThatOpens = GetWorld()->GetFirstPlayerController()->GetPawn();
-	Owner = GetOwner();
 }
 
 void UOpenDoor::OpenDoor()
 {
-	Owner->SetActorRotation(FRotator(0.f, OpenAngle, 0.f));
+	GetOwner()->SetActorRotation(FRotator(0.f, OpenAngle, 0.f));
 }
 
 void UOpenDoor::CloseDoor()
 {
-	Owner->SetActorRotation(FRotator(0.f, 0.f, 0.f));
+	GetOwner()->SetActorRotation(FRotator(0.f, -90.f, 0.f));
 }
 
 
@@ -46,9 +45,9 @@ void UOpenDoor::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompo
 		LastDoorOpenTime = GetWorld()->GetTimeSeconds();
 	}
 
-	if (LastDoorOpenTime + DoorCloseDelay == GetWorld()->GetTimeSeconds())
+	if (GetWorld()->GetTimeSeconds() - LastDoorOpenTime > DoorCloseDelay)
 	{
-
+		CloseDoor();
 	}
 }
 
