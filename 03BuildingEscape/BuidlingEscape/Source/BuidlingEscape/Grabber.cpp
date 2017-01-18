@@ -28,15 +28,13 @@ void UGrabber::BeginPlay()
 void UGrabber::Grab()
 {
 	auto HitResult = GetFirstPhysicsBodyInReach();
-	auto ComponentToGrab = HitResult.GetComponent();
-	auto ActorHit = HitResult.GetActor();
 
-	if (ActorHit)
+	if (HitResult.GetActor())
 	{
 		PhysicsHandle->GrabComponent(
-			ComponentToGrab,
+			HitResult.GetComponent(),
 			NAME_None,
-			ComponentToGrab->GetOwner()->GetActorLocation(),
+			HitResult.GetComponent()->GetOwner()->GetActorLocation(),
 			true
 		);
 	}
@@ -44,18 +42,13 @@ void UGrabber::Grab()
 
 void UGrabber::Release()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Grab released"));
 	PhysicsHandle->ReleaseComponent();
 }
 
 void UGrabber::FindPhysicsHandleComponent()
 {
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
-	if (PhysicsHandle)
-	{
-
-	}
-	else
+	if (!PhysicsHandle)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s missing physicshandle"), *GetOwner()->GetName());
 	}
@@ -82,14 +75,12 @@ const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
 	FRotator Rotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT Location, OUT Rotation);
 
-	FVector LineEnd = Location + Rotation.Vector() * Reach;
-
 	FHitResult Hit;
 	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
 	GetWorld()->LineTraceSingleByObjectType(
 		OUT Hit,
 		Location,
-		LineEnd,
+		GetLineEnd(),
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		TraceParameters
 	);
@@ -108,14 +99,17 @@ void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompon
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
+	if (PhysicsHandle->GrabbedComponent)
+	{
+		PhysicsHandle->SetTargetLocation(GetLineEnd());
+	}
+}
+
+const FVector UGrabber::GetLineEnd()
+{
 	FVector Location;
 	FRotator Rotation;
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(OUT Location, OUT Rotation);
 
-	FVector LineEnd = Location + Rotation.Vector() * Reach;
-
-	if (PhysicsHandle->GrabbedComponent)
-	{
-		PhysicsHandle->SetTargetLocation(LineEnd);
-	}
+	return Location + Rotation.Vector() * Reach;
 }
