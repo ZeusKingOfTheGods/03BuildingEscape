@@ -33,9 +33,9 @@ private:
 
 	float LastDoorOpenTime;
 
-	UPROPERTY(VisibleAnywhere)
-	AActor* ActorThatOpens;
-
 	void OpenDoor();
 	void CloseDoor();
+
+	// returns mass in kg
+	float GetTotalMassOfActorsOnPlate();
 };
