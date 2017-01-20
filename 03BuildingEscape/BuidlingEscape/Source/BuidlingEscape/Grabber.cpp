@@ -31,6 +31,8 @@ void UGrabber::Grab()
 
 	if (HitResult.GetActor())
 	{
+		if (!PhysicsHandle) return;
+
 		PhysicsHandle->GrabComponent(
 			HitResult.GetComponent(),
 			NAME_None,
@@ -42,6 +44,7 @@ void UGrabber::Grab()
 
 void UGrabber::Release()
 {
+	if (!PhysicsHandle) return;
 	PhysicsHandle->ReleaseComponent();
 }
 
@@ -58,15 +61,14 @@ void UGrabber::SetupInputComponent()
 {
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 
-	if (InputComponent)
-	{
-		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
-		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
-	}
-	else
+	if (!InputComponent)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s missing InputComponent"), *GetOwner()->GetName());
+		return;
 	}
+
+	InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+	InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
 }
 
 const FHitResult UGrabber::GetFirstPhysicsBodyInReach()
@@ -90,6 +92,7 @@ void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompon
 {
 	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
 
+	if (!PhysicsHandle) return;
 	if (PhysicsHandle->GrabbedComponent)
 	{
 		PhysicsHandle->SetTargetLocation(GetLineEnd());
